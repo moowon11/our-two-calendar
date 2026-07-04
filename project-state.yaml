@@ -176,5 +176,5 @@ screens:
   s2_day_detail:  { priority: S, states_done: true, done: true }
   s3_event_form:  { priority: S, states_done: true, done: true }
   s4_anniversary: { priority: A, states_done: true, done: true }
-  s5_memories:    { priority: A, states_done: true, done: true }
+  s5_memories:    { priority: A, removed: true }   # 사용자 요청으로 2026-07-04 삭제(decisions.md 참고)
   s6_messages:    { priority: B, states_done: true, done: true }

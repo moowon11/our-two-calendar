@@ -39,7 +39,7 @@ export function UnlinkCoupleButton({ partnerName }: { partnerName: string }) {
             {partnerName}와 연결을 끊을까?
           </DialogTitle>
           <DialogDescription>
-            연결이 끊어지면 서로의 달력·추억·쪽지를 더 이상 볼 수 없어. 지금까지 쌓은
+            연결이 끊어지면 서로의 달력·쪽지를 더 이상 볼 수 없어. 지금까지 쌓은
             기록은 지워지지 않으니, 같은 초대코드로 다시 연결하면 그대로 돌아와.
           </DialogDescription>
         </DialogHeader>
