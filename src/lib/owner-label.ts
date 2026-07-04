@@ -38,13 +38,14 @@ export function ownerTextColorClass(label: OwnerLabel): string {
 }
 
 // 월간 격자 칸 안에 일정 제목을 작은 칩으로 보여줄 때 쓰는 배경+글자색 조합.
+// 배경은 옅은 브랜드색 틴트, 글자는 대비를 위해 더 진한 톤(-deep 토큰)을 쓴다.
 export function ownerChipClass(label: OwnerLabel): string {
   switch (label) {
     case "나":
-      return "bg-primary/15 text-primary";
+      return "bg-primary/15 text-main-deep font-semibold";
     case "너":
-      return "bg-secondary/15 text-secondary";
+      return "bg-secondary/15 text-secondary-deep font-semibold";
     case "우리":
-      return "bg-accent/25 text-accent-deep";
+      return "bg-accent/25 text-accent-deep font-semibold";
   }
 }

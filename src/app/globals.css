@@ -52,6 +52,8 @@
   --color-success: var(--success);
   --color-danger: var(--danger);
   --color-accent-deep: var(--accent-deep);
+  --color-main-deep: var(--main-deep);
+  --color-secondary-deep: var(--secondary-deep);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -74,6 +76,8 @@
   --success: #7fa87a;
   --danger: #d98878;
   --accent-deep: #c69a6e; /* 살구 배경 위 글자용 진한 톤(디자인 시안 그대로) */
+  --main-deep: color-mix(in srgb, var(--main) 65%, var(--ink) 35%); /* 코랄 텍스트용 진한 톤 */
+  --secondary-deep: color-mix(in srgb, var(--secondary-brand) 60%, var(--ink) 40%); /* 세이지 텍스트용 진한 톤 */
 
   --background: var(--bg);
   --foreground: var(--ink);
