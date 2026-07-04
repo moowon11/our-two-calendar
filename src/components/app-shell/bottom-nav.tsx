@@ -17,7 +17,7 @@ export function BottomNav({ unreadCount }: { unreadCount: number }) {
             key={item.href}
             href={item.href}
             className={cn(
-              "relative flex flex-col items-center gap-0.5 text-[11px]",
+              "relative flex flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-[11px] transition-transform duration-100 active:scale-90 active:bg-muted",
               active ? "text-primary" : "text-muted-foreground",
             )}
           >

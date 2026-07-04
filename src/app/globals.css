@@ -172,4 +172,9 @@
   html {
     @apply font-sans;
   }
+  /* 브라우저 기본 탭 하이라이트(회색 번쩍임)를 지우고, 우리가 직접 넣은 active: 눌림 효과만 보이게 함 */
+  a,
+  button {
+    -webkit-tap-highlight-color: transparent;
+  }
 }

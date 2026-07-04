@@ -34,7 +34,7 @@ export function MobileHeader({
         />
         <Link
           href="/settings"
-          className="ml-1 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground"
+          className="ml-1 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-transform duration-100 active:scale-90 active:bg-muted"
           aria-label="설정"
         >
           ⚙️
