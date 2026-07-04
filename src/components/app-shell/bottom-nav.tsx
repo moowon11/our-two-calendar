@@ -17,14 +17,13 @@ export function BottomNav({ unreadCount }: { unreadCount: number }) {
             key={item.href}
             href={item.href}
             className={cn(
-              "relative flex flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-[11px] transition-transform duration-100 active:scale-90 active:bg-muted",
-              active ? "text-primary" : "text-muted-foreground",
+              "relative flex items-center justify-center rounded-xl px-4 py-2 font-hand text-base transition-transform duration-100 active:scale-90 active:bg-muted",
+              active ? "text-primary" : "text-ink",
             )}
           >
-            <span className="text-xl">{item.icon}</span>
             {item.label}
             {item.href === "/messages" && unreadCount > 0 && (
-              <span className="absolute -top-0.5 right-1 h-2 w-2 rounded-full bg-destructive" />
+              <span className="absolute top-0.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
             )}
           </Link>
         );
