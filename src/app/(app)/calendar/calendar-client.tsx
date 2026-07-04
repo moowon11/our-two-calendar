@@ -204,9 +204,9 @@ export function CalendarClient({
       </div>
 
       {status === "loading" ? (
-        <div className="grid grid-cols-7 gap-1.5 lg:gap-2">
+        <div className="grid grid-cols-7 gap-0.5 lg:gap-2">
           {Array.from({ length: 35 }).map((_, i) => (
-            <Skeleton key={i} className="h-[68px] rounded-xl lg:h-[104px]" />
+            <Skeleton key={i} className="h-[80px] rounded-lg lg:h-[104px] lg:rounded-xl" />
           ))}
         </div>
       ) : (
@@ -236,7 +236,7 @@ export function CalendarClient({
             ))}
           </div>
 
-          <div className="grid grid-cols-7 gap-1.5 lg:gap-2">
+          <div className="grid grid-cols-7 gap-0.5 lg:gap-2">
             {grid.map((date) => {
               const key = toDateKey(date);
               const inMonth = date.getMonth() + 1 === month;
@@ -250,7 +250,7 @@ export function CalendarClient({
                 <Link
                   key={key}
                   href={`/day/${key}`}
-                  className={`flex min-h-[68px] flex-col gap-1 overflow-hidden rounded-xl border p-1.5 text-left transition-shadow lg:min-h-[104px] ${
+                  className={`flex min-h-[80px] flex-col gap-0.5 overflow-hidden rounded-lg border p-1 text-left transition-shadow lg:min-h-[104px] lg:gap-1 lg:rounded-xl lg:p-1.5 ${
                     isToday
                       ? "border-2 border-primary bg-accent/15"
                       : "border-line"
@@ -275,7 +275,7 @@ export function CalendarClient({
                     {visibleEvents.map((ev) => (
                       <span
                         key={ev.id}
-                        className={`truncate rounded px-1 py-0.5 text-[9px] leading-tight lg:text-[11px] ${ownerChipClass(
+                        className={`truncate rounded px-1 py-0.5 text-[10.5px] leading-tight lg:text-[11px] ${ownerChipClass(
                           resolveOwnerLabel(ev, myMemberId),
                         )}`}
                       >
@@ -283,7 +283,7 @@ export function CalendarClient({
                       </span>
                     ))}
                     {moreCount > 0 && (
-                      <span className="px-1 text-[9px] text-muted-foreground lg:text-[11px]">
+                      <span className="px-1 text-[10px] text-muted-foreground lg:text-[11px]">
                         +{moreCount}
                       </span>
                     )}
