@@ -86,7 +86,7 @@ export default async function DayDetailPage({
     <div className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-6 lg:px-8 lg:py-8">
       <div className="flex items-center gap-3">
         <Link
-          href="/calendar"
+          href={`/calendar?year=${d.getFullYear()}&month=${d.getMonth() + 1}`}
           aria-label="달력으로"
           className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted-foreground"
         >

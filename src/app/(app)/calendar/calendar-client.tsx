@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
@@ -46,8 +47,28 @@ export function CalendarClient({
   partnerAvatarUrl?: string | null;
 }) {
   const today = useMemo(() => new Date(), []);
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth() + 1);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialYear = Number(searchParams.get("year"));
+  const initialMonth = Number(searchParams.get("month"));
+  const hasValidInitialParams =
+    Number.isInteger(initialYear) &&
+    Number.isInteger(initialMonth) &&
+    initialMonth >= 1 &&
+    initialMonth <= 12;
+  const [year, setYear] = useState(
+    hasValidInitialParams ? initialYear : today.getFullYear(),
+  );
+  const [month, setMonth] = useState(
+    hasValidInitialParams ? initialMonth : today.getMonth() + 1,
+  );
+
+  // 보고 있는 달을 주소창에 반영 — 다른 화면에 갔다가 돌아와도(또는 브라우저 뒤로가기로도)
+  // 방금 보던 달이 그대로 유지되게 하기 위함.
+  useEffect(() => {
+    router.replace(`/calendar?year=${year}&month=${month}`, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [year, month]);
 
   const [status, setStatus] = useState<"loading" | "error" | "success">("loading");
   const [events, setEvents] = useState<EventRow[]>([]);
