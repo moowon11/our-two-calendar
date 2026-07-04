@@ -126,7 +126,6 @@ export function CalendarClient({
 
   const grid = useMemo(() => buildMonthGrid(year, month), [year, month]);
   const todayKey = toDateKey(today);
-  const hasAnyEventThisMonth = eventsByDate.size > 0 || anniversariesByDate.size > 0;
 
   const goPrevMonth = () => {
     if (month === 1) {
@@ -283,18 +282,6 @@ export function CalendarClient({
         </div>
       ) : (
         <>
-          {!hasAnyEventThisMonth && (
-            <div className="mb-3 flex flex-col items-center gap-2 rounded-2xl border border-dashed border-accent bg-card px-5 py-6 text-center">
-              <span className="text-3xl">📖</span>
-              <p className="font-hand text-lg font-bold text-foreground">
-                아직 텅 빈 달력이야, 첫 일정을 남겨볼까?
-              </p>
-              <Button asChild size="sm" className="mt-1">
-                <Link href={`/events/new?date=${todayKey}`}>일정 추가하기</Link>
-              </Button>
-            </div>
-          )}
-
           <div onTouchStart={onGridTouchStart} onTouchEnd={onGridTouchEnd}>
           <div className="mb-1 grid grid-cols-7">
             {WEEKDAYS.map((w, i) => (
