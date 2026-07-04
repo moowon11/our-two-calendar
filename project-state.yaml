@@ -1,0 +1,114 @@
+# project-state.yaml — 오토파일럿/오케스트레이터가 진행 상태를 기록하는 단일 진실 파일.
+# 세션이 끊기거나 한도에 걸려도 이 파일을 읽고 이어서 진행한다.
+# (02_reference_code/project-state.yaml.example 의 형식을 따르고, 커플 캘린더 프로젝트의 실제 진행 내용을 채웠다.)
+
+project_name: "our-two-calendar"          # 우리 둘의 캘린더
+one_line: "애인과 서로의 스케줄을 공유하고, 함께하는 일정·기념일·디데이를 챙기며, 날짜마다 사진과 메모로 소소한 일상을 남기는 — 펼치고 싶은 다이어리 같은 둘만의 캘린더."
+mode: ""                                   # safe / full-auto — 아직 미정, 다음 세션에서 확인 필요
+live_url: ""                               # 배포 단계(2-auth-couple 이전 Vercel 연결) 이후 채움
+created_at: "2026-07-04"
+
+current_phase: 0
+current_phase_status: in_progress          # 0-scaffold: Next.js/Tailwind/shadcn 완료, supabase client·디자인 토큰·.env.local 남음
+
+# 각 Phase 끝에 append. phase 번호는 아래 phases[].id 의 순번과 대응한다.
+phase_history:
+  - phase: 0
+    status: in_progress
+    outputs:
+      - "my-web/ — Next.js 16.2.10 LTS(App Router) + React 19.2.4 + Tailwind CSS v4 + shadcn/ui(CLI v4, radix base) 스캐폴드 완료(2026-07-04, 웹 검색으로 최신 안정 버전 확인)"
+      - "CLAUDE.md, .claude/agents(researcher/reviewer) 배치 완료"
+    note: "supabase client, .env.local(키는 각자), STYLE_GUIDE 기반 tailwind 디자인 토큰 반영은 아직 남음"
+
+# 다음 세션 진입점(이어서 할 때 첫 줄에서 확인)
+next_entry_point: "0-scaffold의 남은 outputs(디자인 토큰, supabase client, .env.local) 이어서 진행 → 완료되면 1-db로"
+
+# --- 아래는 이 프로젝트 전용 세부 트래킹 (BUILD_KIT.md의 BUILD_ORDER/PAGE_LIST와 1:1 대응) ---
+
+meta:
+  stack: next.js(app-router) + typescript + tailwind + shadcn/ui + supabase(auth/db/storage/realtime)
+  deploy_target: vercel
+  updated_at: "2026-07-04"
+  updated_by: orchestrator
+
+# 의존 순서대로 정의한 페이즈. 각 페이즈는 BUILD_ORDER 의 단계와 1:1 대응된다.
+phases:
+  - id: 0-scaffold
+    title: 프로젝트 뼈대 + 디자인 토큰 + Supabase 연결
+    status: in_progress
+    depends_on: []
+    outputs: [next.js 프로젝트, tailwind 토큰(styleguide 반영), supabase client, .env.local(키는 각자)]
+    evidence: "create-next-app + shadcn init 완료(2026-07-04). npm run build 아직 미실행."
+
+  - id: 1-db
+    title: DB 스키마 + RLS + 트리거 + Storage 버킷 적용
+    status: todo
+    depends_on: [0-scaffold]
+    outputs: [schema.sql 적용 완료, photos 버킷 생성, realtime publication 등록]
+    evidence: ""
+
+  - id: 2-auth-couple
+    title: 로그인 · 커플 연결(초대코드) 화면 (screen 0)
+    status: todo
+    depends_on: [1-db]
+    outputs: [로그인, 회원가입, 초대코드 생성/입력, 연결 대기 빈화면]
+    evidence: ""
+
+  - id: 3-calendar
+    title: 메인 월간 캘린더 (screen 1) + 실시간 반영
+    status: todo
+    depends_on: [2-auth-couple]
+    outputs: [월간 격자, 디데이 위젯, 색 구분 점, 사진 썸네일, 실시간 구독]
+    evidence: ""
+
+  - id: 4-day-detail
+    title: 날짜 상세 (screen 2)
+    status: todo
+    depends_on: [3-calendar]
+    outputs: [그날 일정/메모/사진, 추가 입구 3종]
+    evidence: ""
+
+  - id: 5-event-form
+    title: 일정 추가/편집 (screen 3)
+    status: todo
+    depends_on: [4-day-detail]
+    outputs: [일정 폼, 사진 첨부(클라 리사이즈), 저장 실패 시 입력 보존]
+    evidence: ""
+
+  - id: 6-anniversary
+    title: 기념일 · 디데이 (screen 4)
+    status: todo
+    depends_on: [3-calendar]
+    outputs: [기념일 목록, D-day 카운트다운, 매년반복/위젯고정]
+    evidence: ""
+
+  - id: 7-memories
+    title: 추억 모아보기 (screen 5)
+    status: todo
+    depends_on: [4-day-detail]
+    outputs: [사진 타임라인/앨범, 사진->날짜 상세 이동]
+    evidence: ""
+
+  - id: 8-messages
+    title: 쪽지 (screen 6)
+    status: todo
+    depends_on: [2-auth-couple]
+    outputs: [쪽지 목록, 작성, 읽음 표시, 실시간]
+    evidence: ""
+
+  - id: 9-polish
+    title: 상태화면 정리(로딩/빈/에러) + 반응형(390/1280) + QUALITY_BAR 통과
+    status: todo
+    depends_on: [3-calendar, 4-day-detail, 5-event-form, 6-anniversary, 7-memories, 8-messages]
+    outputs: [모든 화면 상태 처리, 접근성, npm run build 통과]
+    evidence: ""
+
+# 화면별 완료 체크 (PAGE_LIST 와 1:1). done 처리 전 상태 4종이 모두 구현됐는지 확인.
+screens:
+  s0_auth:        { priority: S, states_done: false, done: false }
+  s1_calendar:    { priority: S, states_done: false, done: false }
+  s2_day_detail:  { priority: S, states_done: false, done: false }
+  s3_event_form:  { priority: S, states_done: false, done: false }
+  s4_anniversary: { priority: A, states_done: false, done: false }
+  s5_memories:    { priority: A, states_done: false, done: false }
+  s6_messages:    { priority: B, states_done: false, done: false }
