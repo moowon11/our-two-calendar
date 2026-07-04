@@ -276,6 +276,21 @@ begin
   return v_couple;
 end; $$;
 
+-- 6-3) 커플 끊기: 나와 상대 양쪽 members.couple_id/role을 null로 되돌린다.
+--      couples 행과 그 안의 events/notes/anniversaries/messages/photos는 지우지 않는다
+--      (되돌릴 수 있게 — 같은 초대코드로 다시 join_couple 하면 예전 데이터가 그대로 복원됨).
+create or replace function public.unlink_couple()
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  v_uid uuid := auth.uid();
+  v_couple uuid;
+begin
+  if v_uid is null then raise exception 'not authenticated'; end if;
+  select couple_id into v_couple from members where id = v_uid;
+  if v_couple is null then raise exception 'not in a couple'; end if;
+  update members set couple_id = null, role = null where couple_id = v_couple;
+end; $$;
+
 -- =====================================================================
 -- 7) Storage : photos 버킷 + 커플 폴더 단위 접근 정책
 --    경로 규칙: <couple_id>/<yyyy>/<mm>/<uuid>.webp

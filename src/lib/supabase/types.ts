@@ -212,6 +212,10 @@ export interface Database {
         Args: Record<PropertyKey, never>;
         Returns: string | null;
       };
+      unlink_couple: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
     };
   };
 }

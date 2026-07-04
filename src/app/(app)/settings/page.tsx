@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getSessionInfo } from "@/lib/supabase/session";
 import { signOutAction } from "@/lib/supabase/actions";
 import { Button } from "@/components/ui/button";
+import { UnlinkCoupleButton } from "./unlink-couple-button";
 
 export default async function SettingsPage() {
   const session = await getSessionInfo();
@@ -39,6 +40,15 @@ export default async function SettingsPage() {
           로그아웃
         </Button>
       </form>
+
+      <div className="flex flex-col gap-2 rounded-2xl border border-dashed border-destructive/40 p-5">
+        <h2 className="text-sm font-bold text-destructive">위험 구역</h2>
+        <p className="text-xs text-muted-foreground">
+          커플 연결을 끊으면 서로의 화면에서 공유 데이터가 보이지 않게 돼. 기록 자체는
+          지워지지 않아서 같은 초대코드로 다시 연결하면 복원돼.
+        </p>
+        <UnlinkCoupleButton partnerName={partner?.display_name || "상대"} />
+      </div>
     </div>
   );
 }

@@ -20,5 +20,7 @@ AI가 사람에게 묻지 않고 default로 정한 것들. 형식: `결정 / 이
 
 - 이메일 확인(Confirm email) = 끄는 것을 권장함 / 디자인 시안에 이메일 인증 화면이 없고, 2인용 개인 앱에 불필요한 마찰이며, Supabase 무료 티어 내장 메일 발송이 시간당 몇 통으로 강하게 제한돼 있어 반복 가입 테스트조차 막힘(실측: signUp 2회 만에 "email rate limit exceeded") / signUp 서버 액션은 이 토글이 켜져 있어도 안전하게 "이메일함을 확인해줘" 상태를 보여주도록 만들어 둠(needsEmailConfirm) / 되돌리려면 Supabase 대시보드 Authentication → Providers → Email → Confirm email 토글만 다시 켜면 됨
 
+- 커플 끊기 = `unlink_couple()` RPC로 나/상대 members.couple_id·role만 null로 되돌리고, couples 행과 그 안의 events/notes/anniversaries/messages/photos는 지우지 않음 / 되돌릴 수 없는 데이터 삭제보다는 "접근을 끊는" 방식이 안전하고, 같은 초대코드로 재join하면 예전 기록이 그대로 복원되는 것도 자연스러운 화해/재연결 경로가 됨 / 되돌리려면(=삭제로 바꾸려면) unlink_couple() 안에서 delete 문을 추가
+
 ## (열려 있는 결정 — 사용자 확인 필요)
 - (현재 없음) — 이메일 확인 토글은 사용자가 직접 끄기로 확정함(2026-07-04).
