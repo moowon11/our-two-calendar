@@ -6,6 +6,7 @@ import { signAvatarUrl } from "@/lib/supabase/avatar";
 import { Sidebar } from "@/components/app-shell/sidebar";
 import { BottomNav } from "@/components/app-shell/bottom-nav";
 import { MobileHeader } from "@/components/app-shell/mobile-header";
+import { PullToRefresh } from "@/components/pull-to-refresh";
 
 export default async function AppLayout({
   children,
@@ -68,7 +69,9 @@ export default async function AppLayout({
           partnerName={partnerName}
           partnerAvatarUrl={partnerAvatarUrl}
         />
-        <main className="flex-1 pb-[86px] lg:pb-0">{children}</main>
+        <main className="flex-1 pb-[86px] lg:pb-0">
+          <PullToRefresh>{children}</PullToRefresh>
+        </main>
       </div>
       <BottomNav unreadCount={unreadCount ?? 0} />
     </div>
