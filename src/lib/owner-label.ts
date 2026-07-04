@@ -36,3 +36,15 @@ export function ownerTextColorClass(label: OwnerLabel): string {
       return "text-accent";
   }
 }
+
+// 월간 격자 칸 안에 일정 제목을 작은 칩으로 보여줄 때 쓰는 배경+글자색 조합.
+export function ownerChipClass(label: OwnerLabel): string {
+  switch (label) {
+    case "나":
+      return "bg-primary/15 text-primary";
+    case "너":
+      return "bg-secondary/15 text-secondary";
+    case "우리":
+      return "bg-accent/25 text-accent-deep";
+  }
+}

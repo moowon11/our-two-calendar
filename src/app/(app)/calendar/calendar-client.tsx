@@ -11,16 +11,14 @@ import {
   daysSince,
   ddayLabel,
   expandEventsForMonth,
-  monthRange,
   nextOccurrence,
   toDateKey,
 } from "@/lib/date-utils";
-import { resolveOwnerLabel, ownerColorClass } from "@/lib/owner-label";
+import { resolveOwnerLabel, ownerChipClass } from "@/lib/owner-label";
 import type { Database } from "@/lib/supabase/types";
 
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
 type AnniversaryRow = Database["public"]["Tables"]["anniversaries"]["Row"];
-type PhotoRow = Database["public"]["Tables"]["photos"]["Row"];
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -44,56 +42,24 @@ export function CalendarClient({
   const [status, setStatus] = useState<"loading" | "error" | "success">("loading");
   const [events, setEvents] = useState<EventRow[]>([]);
   const [anniversaries, setAnniversaries] = useState<AnniversaryRow[]>([]);
-  const [photosByDate, setPhotosByDate] = useState<Map<string, string>>(new Map());
   const [flashDate, setFlashDate] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setStatus("loading");
     const supabase = createClient();
-    const { startKey, endKey } = monthRange(year, month);
 
-    const [eventsRes, annRes, photosRes] = await Promise.all([
+    const [eventsRes, annRes] = await Promise.all([
       supabase.from("events").select("*").eq("couple_id", coupleId),
       supabase.from("anniversaries").select("*").eq("couple_id", coupleId),
-      supabase
-        .from("photos")
-        .select("*")
-        .eq("couple_id", coupleId)
-        .gte("photo_date", startKey)
-        .lte("photo_date", endKey),
     ]);
 
-    if (eventsRes.error || annRes.error || photosRes.error) {
+    if (eventsRes.error || annRes.error) {
       setStatus("error");
       return;
     }
 
     setEvents(eventsRes.data);
     setAnniversaries(annRes.data);
-
-    const photos = photosRes.data as PhotoRow[];
-    const firstPerDate = new Map<string, PhotoRow>();
-    for (const p of photos) {
-      if (!firstPerDate.has(p.photo_date)) firstPerDate.set(p.photo_date, p);
-    }
-    if (firstPerDate.size > 0) {
-      const paths = Array.from(firstPerDate.values()).map((p) => p.storage_path);
-      const { data: signed } = await supabase.storage
-        .from("photos")
-        .createSignedUrls(paths, 3600);
-      const urlByPath = new Map(
-        (signed ?? []).map((s) => [s.path, s.signedUrl] as const),
-      );
-      const byDate = new Map<string, string>();
-      for (const [date, photo] of firstPerDate) {
-        const url = urlByPath.get(photo.storage_path);
-        if (url) byDate.set(date, url);
-      }
-      setPhotosByDate(byDate);
-    } else {
-      setPhotosByDate(new Map());
-    }
-
     setStatus("success");
   }, [coupleId, year, month]);
 
@@ -240,7 +206,7 @@ export function CalendarClient({
       {status === "loading" ? (
         <div className="grid grid-cols-7 gap-1.5 lg:gap-2">
           {Array.from({ length: 35 }).map((_, i) => (
-            <Skeleton key={i} className="aspect-square rounded-xl" />
+            <Skeleton key={i} className="h-[68px] rounded-xl lg:h-[104px]" />
           ))}
         </div>
       ) : (
@@ -276,14 +242,15 @@ export function CalendarClient({
               const inMonth = date.getMonth() + 1 === month;
               const isToday = key === todayKey;
               const dayEvents = eventsByDate.get(key) ?? [];
-              const photoUrl = photosByDate.get(key);
               const isFlashing = flashDate === key;
+              const visibleEvents = dayEvents.slice(0, 2);
+              const moreCount = dayEvents.length - visibleEvents.length;
 
               return (
                 <Link
                   key={key}
                   href={`/day/${key}`}
-                  className={`flex aspect-square flex-col gap-1 overflow-hidden rounded-xl border p-1.5 text-left transition-shadow ${
+                  className={`flex min-h-[68px] flex-col gap-1 overflow-hidden rounded-xl border p-1.5 text-left transition-shadow lg:min-h-[104px] ${
                     isToday
                       ? "border-2 border-primary bg-accent/15"
                       : "border-line"
@@ -304,23 +271,22 @@ export function CalendarClient({
                   >
                     {date.getDate()}
                   </span>
-                  {photoUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={photoUrl}
-                      alt=""
-                      className="h-4 flex-1 w-full rounded-md object-cover lg:h-6"
-                    />
-                  )}
-                  <div className="flex flex-wrap gap-0.5">
-                    {dayEvents.slice(0, 3).map((ev) => (
+                  <div className="flex flex-col gap-0.5">
+                    {visibleEvents.map((ev) => (
                       <span
                         key={ev.id}
-                        className={`h-1.5 w-1.5 rounded-full ${ownerColorClass(
+                        className={`truncate rounded px-1 py-0.5 text-[9px] leading-tight lg:text-[11px] ${ownerChipClass(
                           resolveOwnerLabel(ev, myMemberId),
                         )}`}
-                      />
+                      >
+                        {ev.title}
+                      </span>
                     ))}
+                    {moreCount > 0 && (
+                      <span className="px-1 text-[9px] text-muted-foreground lg:text-[11px]">
+                        +{moreCount}
+                      </span>
+                    )}
                   </div>
                 </Link>
               );

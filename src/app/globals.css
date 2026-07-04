@@ -51,6 +51,7 @@
   --color-line: var(--line);
   --color-success: var(--success);
   --color-danger: var(--danger);
+  --color-accent-deep: var(--accent-deep);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -72,6 +73,7 @@
   --line: #efe6da; /* 테두리 */
   --success: #7fa87a;
   --danger: #d98878;
+  --accent-deep: #c69a6e; /* 살구 배경 위 글자용 진한 톤(디자인 시안 그대로) */
 
   --background: var(--bg);
   --foreground: var(--ink);
