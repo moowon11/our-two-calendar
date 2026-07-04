@@ -123,3 +123,30 @@ export function expandEventsForMonth(
 
   return byDate;
 }
+
+// 기념일을 이번 달 격자에 표시할 날짜로 펼친다(매년 반복이면 이번에 보는 연도의 같은 월/일로).
+export function expandAnniversariesForMonth(
+  anniversaries: AnniversaryRow[],
+  year: number,
+  month: number,
+): Map<string, AnniversaryRow[]> {
+  const byDate = new Map<string, AnniversaryRow[]>();
+  const push = (key: string, a: AnniversaryRow) => {
+    const list = byDate.get(key) ?? [];
+    list.push(a);
+    byDate.set(key, list);
+  };
+
+  for (const a of anniversaries) {
+    const base = parseDateKey(a.ann_date);
+    if (a.repeat_yearly) {
+      if (base.getMonth() === month - 1) {
+        push(toDateKey(new Date(year, base.getMonth(), base.getDate())), a);
+      }
+    } else if (base.getFullYear() === year && base.getMonth() === month - 1) {
+      push(a.ann_date, a);
+    }
+  }
+
+  return byDate;
+}

@@ -10,6 +10,7 @@ import {
   buildMonthGrid,
   daysSince,
   ddayLabel,
+  expandAnniversariesForMonth,
   expandEventsForMonth,
   nextOccurrence,
   toDateKey,
@@ -90,6 +91,11 @@ export function CalendarClient({
     [events, year, month],
   );
 
+  const anniversariesByDate = useMemo(
+    () => expandAnniversariesForMonth(anniversaries, year, month),
+    [anniversaries, year, month],
+  );
+
   const upcoming = useMemo(() => {
     if (anniversaries.length === 0) return null;
     const withNext = anniversaries.map((a) => ({ a, next: nextOccurrence(a) }));
@@ -99,7 +105,7 @@ export function CalendarClient({
 
   const grid = useMemo(() => buildMonthGrid(year, month), [year, month]);
   const todayKey = toDateKey(today);
-  const hasAnyEventThisMonth = eventsByDate.size > 0;
+  const hasAnyEventThisMonth = eventsByDate.size > 0 || anniversariesByDate.size > 0;
 
   const goPrevMonth = () => {
     if (month === 1) {
@@ -288,9 +294,22 @@ export function CalendarClient({
               const inMonth = date.getMonth() + 1 === month;
               const isToday = key === todayKey;
               const dayEvents = eventsByDate.get(key) ?? [];
+              const dayAnniversaries = anniversariesByDate.get(key) ?? [];
               const isFlashing = flashDate === key;
-              const visibleEvents = dayEvents.slice(0, 2);
-              const moreCount = dayEvents.length - visibleEvents.length;
+              const chips = [
+                ...dayAnniversaries.map((a) => ({
+                  chipKey: `ann-${a.id}`,
+                  label: `🎉 ${a.title}`,
+                  className: "bg-accent-vivid text-surface font-semibold",
+                })),
+                ...dayEvents.map((ev) => ({
+                  chipKey: ev.id,
+                  label: ev.title,
+                  className: ownerChipClass(resolveOwnerLabel(ev, myMemberId)),
+                })),
+              ];
+              const visibleChips = chips.slice(0, 2);
+              const moreCount = chips.length - visibleChips.length;
 
               return (
                 <Link
@@ -318,14 +337,12 @@ export function CalendarClient({
                     {date.getDate()}
                   </span>
                   <div className="flex flex-col gap-0.5">
-                    {visibleEvents.map((ev) => (
+                    {visibleChips.map((chip) => (
                       <span
-                        key={ev.id}
-                        className={`truncate rounded px-1 py-0.5 text-[11px] leading-tight ${ownerChipClass(
-                          resolveOwnerLabel(ev, myMemberId),
-                        )}`}
+                        key={chip.chipKey}
+                        className={`truncate rounded px-1 py-0.5 text-[11px] leading-tight ${chip.className}`}
                       >
-                        {ev.title}
+                        {chip.label}
                       </span>
                     ))}
                     {moreCount > 0 && (
