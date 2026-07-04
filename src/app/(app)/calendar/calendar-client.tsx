@@ -170,13 +170,27 @@ export function CalendarClient({
         {upcoming && (
           <Link
             href="/anniversaries"
-            className="flex min-w-[200px] flex-col justify-center gap-0.5 rounded-2xl border border-line bg-muted px-5 py-4"
+            className="flex items-center gap-2 rounded-2xl border border-line bg-muted px-4 py-2 lg:min-w-[200px] lg:flex-col lg:items-start lg:justify-center lg:gap-0.5 lg:px-5 lg:py-4"
           >
-            <span className="text-xs font-bold text-secondary">다가오는 기념일</span>
-            <span className="font-hand text-xl font-bold text-foreground">
+            {/* 모바일: 한 줄로 압축 */}
+            <span className="shrink-0 text-xs font-bold text-secondary lg:hidden">
+              다가오는
+            </span>
+            <span className="flex-1 truncate font-hand text-sm font-bold text-foreground lg:hidden">
               {upcoming.a.title}
             </span>
-            <span className="text-xs text-muted-foreground">
+            <span className="shrink-0 font-hand text-sm font-bold text-primary lg:hidden">
+              {ddayLabel(upcoming.next, today)}
+            </span>
+
+            {/* 데스크톱: 기존 3줄 */}
+            <span className="hidden text-xs font-bold text-secondary lg:block">
+              다가오는 기념일
+            </span>
+            <span className="hidden font-hand text-xl font-bold text-foreground lg:block">
+              {upcoming.a.title}
+            </span>
+            <span className="hidden text-xs text-muted-foreground lg:block">
               <span className="font-bold text-primary">{ddayLabel(upcoming.next, today)}</span>
             </span>
           </Link>
