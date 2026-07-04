@@ -122,11 +122,13 @@ export default async function DayDetailPage({
                           </span>
                         )}
                       </span>
-                      {ev.start_time && (
+                      {ev.start_time ? (
                         <span className="text-xs text-muted-foreground">
                           {ev.start_time.slice(0, 5)}
                           {ev.end_time ? ` - ${ev.end_time.slice(0, 5)}` : ""}
                         </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">종일</span>
                       )}
                     </div>
                     <span className="text-xs text-muted-foreground">{label}</span>

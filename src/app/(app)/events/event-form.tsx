@@ -59,6 +59,9 @@ export function EventForm({
   const [startDateValue, setStartDateValue] = useState(
     initialEvent?.event_date ?? defaultDate,
   );
+  const [isAllDay, setIsAllDay] = useState(
+    initialEvent ? !initialEvent.start_time && !initialEvent.end_time : false,
+  );
 
   useEffect(() => {
     if (wasPending.current && !isPending && !state.error) {
@@ -176,26 +179,38 @@ export function EventForm({
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="start_time">시작 시간</Label>
-          <Input
-            id="start_time"
-            name="start_time"
-            type="time"
-            defaultValue={initialEvent?.start_time?.slice(0, 5)}
-          />
+      <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        <input
+          type="checkbox"
+          checked={isAllDay}
+          onChange={(e) => setIsAllDay(e.target.checked)}
+          className="size-4 accent-primary"
+        />
+        하루 종일(시간 없음)
+      </label>
+
+      {!isAllDay && (
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="start_time">시작 시간</Label>
+            <Input
+              id="start_time"
+              name="start_time"
+              type="time"
+              defaultValue={initialEvent?.start_time?.slice(0, 5)}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="end_time">종료 시간</Label>
+            <Input
+              id="end_time"
+              name="end_time"
+              type="time"
+              defaultValue={initialEvent?.end_time?.slice(0, 5)}
+            />
+          </div>
         </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="end_time">종료 시간</Label>
-          <Input
-            id="end_time"
-            name="end_time"
-            type="time"
-            defaultValue={initialEvent?.end_time?.slice(0, 5)}
-          />
-        </div>
-      </div>
+      )}
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="owner">주인</Label>
