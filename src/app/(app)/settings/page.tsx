@@ -6,6 +6,7 @@ import { signOutAction } from "@/lib/supabase/actions";
 import { Button } from "@/components/ui/button";
 import { UnlinkCoupleButton } from "./unlink-couple-button";
 import { AvatarUploader } from "./avatar-uploader";
+import { NicknameForm } from "./nickname-form";
 
 export default async function SettingsPage() {
   const session = await getSessionInfo();
@@ -25,11 +26,11 @@ export default async function SettingsPage() {
         avatarUrl={meAvatarUrl}
       />
 
+      <div className="rounded-2xl border border-line bg-card p-5">
+        <NicknameForm initialName={member.display_name || ""} />
+      </div>
+
       <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-5">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">내 닉네임</span>
-          <span className="text-foreground">{member.display_name || "-"}</span>
-        </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">상대 닉네임</span>
           <span className="text-foreground">{partner?.display_name || "-"}</span>

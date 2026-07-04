@@ -317,6 +317,15 @@ create policy photos_delete on storage.objects for delete
   using (bucket_id = 'photos'
          and (storage.foldername(name))[1] = public.auth_couple_id()::text);
 
+-- upsert(update)로 같은 경로에 다시 올릴 때 필요(예: 아바타 사진 교체) — 없으면
+-- INSERT ... ON CONFLICT DO UPDATE 의 update 분기가 막혀 재업로드가 조용히 실패한다.
+drop policy if exists photos_update on storage.objects;
+create policy photos_update on storage.objects for update
+  using (bucket_id = 'photos'
+         and (storage.foldername(name))[1] = public.auth_couple_id()::text)
+  with check (bucket_id = 'photos'
+         and (storage.foldername(name))[1] = public.auth_couple_id()::text);
+
 -- =====================================================================
 -- 8) Realtime : 변경을 상대에게 실시간 전파할 테이블만 등록
 -- =====================================================================
