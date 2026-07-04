@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -120,6 +120,26 @@ export function CalendarClient({
   const goToday = () => {
     setYear(today.getFullYear());
     setMonth(today.getMonth() + 1);
+  };
+
+  // 좌우 스와이프로 달 이동: 왼쪽으로 밀면 다음 달, 오른쪽으로 밀면 이전 달.
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const onGridTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchStartRef.current = { x: t.clientX, y: t.clientY };
+  };
+  const onGridTouchEnd = (e: React.TouchEvent) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start) return;
+    const t = e.changedTouches[0];
+    const deltaX = t.clientX - start.x;
+    const deltaY = t.clientY - start.y;
+    const SWIPE_THRESHOLD = 50;
+    if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+      if (deltaX < 0) goNextMonth();
+      else goPrevMonth();
+    }
   };
 
   if (status === "error") {
@@ -248,6 +268,7 @@ export function CalendarClient({
             </div>
           )}
 
+          <div onTouchStart={onGridTouchStart} onTouchEnd={onGridTouchEnd}>
           <div className="mb-1 grid grid-cols-7">
             {WEEKDAYS.map((w, i) => (
               <span
@@ -316,6 +337,7 @@ export function CalendarClient({
                 </Link>
               );
             })}
+          </div>
           </div>
         </>
       )}
