@@ -2,7 +2,12 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionInfo } from "@/lib/supabase/session";
-import { expandEventsForMonth, parseDateKey } from "@/lib/date-utils";
+import {
+  ddayLabel,
+  expandAnniversariesForMonth,
+  expandEventsForMonth,
+  parseDateKey,
+} from "@/lib/date-utils";
 import { resolveOwnerLabel, ownerColorClass } from "@/lib/owner-label";
 import { Button } from "@/components/ui/button";
 import { NoteForm } from "./note-form";
@@ -24,7 +29,7 @@ export default async function DayDetailPage({
   const supabase = await createClient();
   const d = parseDateKey(date);
 
-  const [eventsRes, notesRes, photosRes] = await Promise.all([
+  const [eventsRes, notesRes, photosRes, annRes] = await Promise.all([
     supabase.from("events").select("*").eq("couple_id", couple.id),
     supabase
       .from("notes")
@@ -38,14 +43,17 @@ export default async function DayDetailPage({
       .eq("couple_id", couple.id)
       .eq("photo_date", date)
       .order("created_at"),
+    supabase.from("anniversaries").select("*").eq("couple_id", couple.id),
   ]);
 
-  if (eventsRes.error || notesRes.error || photosRes.error) {
+  if (eventsRes.error || notesRes.error || photosRes.error || annRes.error) {
     throw new Error("day-detail-load-failed");
   }
 
   const dayEvents =
     expandEventsForMonth(eventsRes.data, d.getFullYear(), d.getMonth() + 1).get(date) ?? [];
+  const dayAnniversaries =
+    expandAnniversariesForMonth(annRes.data, d.getFullYear(), d.getMonth() + 1).get(date) ?? [];
   const notes = notesRes.data;
   const photos = photosRes.data;
   const myNote = notes.find((n) => n.author_id === member.id);
@@ -68,7 +76,11 @@ export default async function DayDetailPage({
     id === member.id ? member.display_name || "나" : partner?.display_name || "상대";
 
   const weekday = ["일", "월", "화", "수", "목", "금", "토"][d.getDay()];
-  const isEmpty = dayEvents.length === 0 && notes.length === 0 && photos.length === 0;
+  const isEmpty =
+    dayEvents.length === 0 &&
+    dayAnniversaries.length === 0 &&
+    notes.length === 0 &&
+    photos.length === 0;
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-6 lg:px-8 lg:py-8">
@@ -92,6 +104,31 @@ export default async function DayDetailPage({
             이 날은 아직 조용하네
           </p>
         </div>
+      )}
+
+      {/* 기념일 */}
+      {dayAnniversaries.length > 0 && (
+        <section className="flex flex-col gap-2.5">
+          <h2 className="text-sm font-bold text-muted-foreground">기념일</h2>
+          <ul className="flex flex-col gap-2">
+            {dayAnniversaries.map((a) => (
+              <li key={a.id}>
+                <Link
+                  href="/anniversaries"
+                  className="flex items-center gap-3 rounded-2xl border border-line bg-card px-4 py-3"
+                >
+                  <span className="text-lg">🎉</span>
+                  <span className="flex-1 font-hand text-base font-bold text-foreground">
+                    {a.title}
+                  </span>
+                  <span className="rounded-full bg-anniversary/15 px-2.5 py-1 font-hand text-sm font-bold text-anniversary">
+                    {ddayLabel(d)}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {/* 일정 */}

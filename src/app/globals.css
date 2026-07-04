@@ -57,6 +57,7 @@
   --color-main-vivid: var(--main-vivid);
   --color-secondary-vivid: var(--secondary-vivid);
   --color-accent-vivid: var(--accent-vivid);
+  --color-anniversary: var(--anniversary);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -86,6 +87,7 @@
   --main-vivid: #d9714a; /* 진한 코랄 */
   --secondary-vivid: #6f9457; /* 진한 세이지 그린 */
   --accent-vivid: #dd9a4a; /* 진한 살구/앰버 */
+  --anniversary: #3f72af; /* 기념일 전용 — 나/너/우리와 구분되는 파란 톤 */
 
   --background: var(--bg);
   --foreground: var(--ink);

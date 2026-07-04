@@ -300,7 +300,7 @@ export function CalendarClient({
                 ...dayAnniversaries.map((a) => ({
                   chipKey: `ann-${a.id}`,
                   label: `🎉 ${a.title}`,
-                  className: "bg-accent-vivid text-surface font-semibold",
+                  className: "bg-anniversary text-surface font-semibold",
                 })),
                 ...dayEvents.map((ev) => ({
                   chipKey: ev.id,
