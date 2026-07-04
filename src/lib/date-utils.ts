@@ -61,7 +61,18 @@ export function buildMonthGrid(year: number, month: number): Date[] {
   });
 }
 
-// repeat_rule(weekly/monthly/yearly)을 반영해 이번 달에 실제로 표시될 occurrence 날짜들로 펼친다.
+function matchesRecurrence(rule: EventRow["repeat_rule"], base: Date, day: Date): boolean {
+  return rule === "weekly"
+    ? day.getDay() === base.getDay()
+    : rule === "monthly"
+      ? day.getDate() === base.getDate()
+      : rule === "yearly"
+        ? day.getDate() === base.getDate() && day.getMonth() === base.getMonth()
+        : false;
+}
+
+// repeat_rule(weekly/monthly/yearly)과 end_date(연박/여행처럼 여러 날 이어지는 일정)를
+// 반영해 이번 달에 실제로 표시될 날짜들로 펼친다.
 export function expandEventsForMonth(
   events: EventRow[],
   year: number,
@@ -76,26 +87,37 @@ export function expandEventsForMonth(
     byDate.set(key, list);
   };
 
+  const pushRange = (rangeStart: Date, rangeEnd: Date, ev: EventRow) => {
+    const clampedStart = rangeStart < start ? start : rangeStart;
+    const clampedEnd = rangeEnd > end ? end : rangeEnd;
+    if (clampedStart > clampedEnd) return;
+    for (let d = new Date(clampedStart); d <= clampedEnd; d.setDate(d.getDate() + 1)) {
+      push(toDateKey(d), ev);
+    }
+  };
+
   for (const ev of events) {
     const base = parseDateKey(ev.event_date);
-    if (base > end) continue;
+    const rangeEnd = ev.end_date ? parseDateKey(ev.end_date) : base;
+    const durationDays = Math.max(0, daysBetween(base, rangeEnd));
 
     if (ev.repeat_rule === "none") {
-      if (base >= start && base <= end) push(ev.event_date, ev);
+      if (rangeEnd >= start && base <= end) pushRange(base, rangeEnd, ev);
       continue;
     }
 
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      if (d < base) continue;
-      const matches =
-        ev.repeat_rule === "weekly"
-          ? d.getDay() === base.getDay()
-          : ev.repeat_rule === "monthly"
-            ? d.getDate() === base.getDate()
-            : ev.repeat_rule === "yearly"
-              ? d.getDate() === base.getDate() && d.getMonth() === base.getMonth()
-              : false;
-      if (matches) push(toDateKey(d), ev);
+    // 반복 일정: 범위가 이전 달에서 시작해 이번 달로 이어질 수 있으니
+    // durationDays만큼 앞선 날짜부터 앵커(반복 시작일 후보)를 찾는다.
+    const searchStart = new Date(start);
+    searchStart.setDate(searchStart.getDate() - durationDays);
+    const anchorFrom = searchStart < base ? base : searchStart;
+
+    for (let anchor = new Date(anchorFrom); anchor <= end; anchor.setDate(anchor.getDate() + 1)) {
+      if (matchesRecurrence(ev.repeat_rule, base, anchor)) {
+        const occEnd = new Date(anchor);
+        occEnd.setDate(occEnd.getDate() + durationDays);
+        pushRange(anchor, occEnd, ev);
+      }
     }
   }
 

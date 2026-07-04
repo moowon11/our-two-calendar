@@ -20,6 +20,7 @@ export async function saveEventAction(
   const id = String(formData.get("id") ?? "") || null;
   const title = String(formData.get("title") ?? "").trim();
   const date = String(formData.get("event_date") ?? "");
+  const endDate = String(formData.get("end_date") ?? "") || null;
   const startTime = String(formData.get("start_time") ?? "") || null;
   const endTime = String(formData.get("end_time") ?? "") || null;
   const owner = String(formData.get("owner") ?? "shared");
@@ -28,6 +29,9 @@ export async function saveEventAction(
 
   if (!title || !date) {
     return { error: "제목과 날짜는 꼭 입력해줘", eventId: id, date };
+  }
+  if (endDate && endDate < date) {
+    return { error: "종료 날짜는 시작 날짜보다 빠를 수 없어", eventId: id, date };
   }
 
   const session = await getSessionInfo();
@@ -48,6 +52,7 @@ export async function saveEventAction(
     couple_id: session.couple.id,
     title,
     event_date: date,
+    end_date: endDate,
     start_time: startTime,
     end_time: endTime,
     owner_kind: ownerKind as "shared" | "individual",

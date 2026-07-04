@@ -69,6 +69,7 @@ create table if not exists public.events (
   couple_id   uuid not null references public.couples(id) on delete cascade,
   title       text not null,
   event_date  date not null,
+  end_date    date,                                   -- 연박/여행처럼 여러 날에 걸치면 마지막 날짜(포함). null이면 하루짜리.
   start_time  time,
   end_time    time,
   owner_kind  text not null default 'individual' check (owner_kind in ('individual','shared')),
@@ -77,8 +78,19 @@ create table if not exists public.events (
   repeat_rule text not null default 'none' check (repeat_rule in ('none','weekly','monthly','yearly')),
   updated_by  uuid references auth.users(id),
   created_at  timestamptz not null default now(),
-  updated_at  timestamptz not null default now()
+  updated_at  timestamptz not null default now(),
+  constraint events_end_date_after_start check (end_date is null or end_date >= event_date)
 );
+-- 이미 만들어진 프로젝트에 컬럼만 추가할 때(테이블은 그대로 두고):
+alter table public.events add column if not exists end_date date;
+do $$ begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'events_end_date_after_start'
+  ) then
+    alter table public.events
+      add constraint events_end_date_after_start check (end_date is null or end_date >= event_date);
+  end if;
+end $$;
 
 -- 2-4) 기념일 · 디데이
 create table if not exists public.anniversaries (

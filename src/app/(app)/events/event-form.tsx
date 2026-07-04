@@ -55,6 +55,10 @@ export function EventForm({
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [isUploadingPhoto, setUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isMultiDay, setIsMultiDay] = useState(!!initialEvent?.end_date);
+  const [startDateValue, setStartDateValue] = useState(
+    initialEvent?.event_date ?? defaultDate,
+  );
 
   useEffect(() => {
     if (wasPending.current && !isPending && !state.error) {
@@ -136,19 +140,45 @@ export function EventForm({
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        <div className="col-span-1 flex flex-col gap-1.5">
-          <Label htmlFor="event_date">날짜</Label>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="event_date">{isMultiDay ? "시작 날짜" : "날짜"}</Label>
+        <Input
+          id="event_date"
+          name="event_date"
+          type="date"
+          required
+          defaultValue={initialEvent?.event_date ?? defaultDate}
+          onChange={(e) => setStartDateValue(e.target.value)}
+        />
+      </div>
+
+      <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        <input
+          type="checkbox"
+          checked={isMultiDay}
+          onChange={(e) => setIsMultiDay(e.target.checked)}
+          className="size-4 accent-primary"
+        />
+        여행처럼 여러 날에 걸쳐요(연박)
+      </label>
+
+      {isMultiDay && (
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="end_date">종료 날짜</Label>
           <Input
-            id="event_date"
-            name="event_date"
+            id="end_date"
+            name="end_date"
             type="date"
-            required
-            defaultValue={initialEvent?.event_date ?? defaultDate}
+            required={isMultiDay}
+            min={startDateValue}
+            defaultValue={initialEvent?.end_date ?? undefined}
           />
         </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="start_time">시작</Label>
+          <Label htmlFor="start_time">시작 시간</Label>
           <Input
             id="start_time"
             name="start_time"
@@ -157,7 +187,7 @@ export function EventForm({
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="end_time">종료</Label>
+          <Label htmlFor="end_time">종료 시간</Label>
           <Input
             id="end_time"
             name="end_time"

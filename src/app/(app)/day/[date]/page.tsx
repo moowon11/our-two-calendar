@@ -114,7 +114,14 @@ export default async function DayDetailPage({
                   >
                     <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${ownerColorClass(label)}`} />
                     <div className="flex flex-1 flex-col">
-                      <span className="text-sm text-foreground">{ev.title}</span>
+                      <span className="flex items-center gap-1.5 text-sm text-foreground">
+                        {ev.title}
+                        {ev.end_date && ev.end_date !== ev.event_date && (
+                          <span className="rounded-full bg-accent/25 px-1.5 py-0.5 text-[10px] text-accent-deep">
+                            {ev.event_date.slice(5)} ~ {ev.end_date.slice(5)}
+                          </span>
+                        )}
+                      </span>
                       {ev.start_time && (
                         <span className="text-xs text-muted-foreground">
                           {ev.start_time.slice(0, 5)}

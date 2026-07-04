@@ -64,6 +64,7 @@ export interface Database {
           couple_id: string;
           title: string;
           event_date: string;
+          end_date: string | null;
           start_time: string | null;
           end_time: string | null;
           owner_kind: OwnerKind;
@@ -80,6 +81,7 @@ export interface Database {
           couple_id: string;
           title: string;
           event_date: string;
+          end_date?: string | null;
           start_time?: string | null;
           end_time?: string | null;
           owner_kind?: OwnerKind;
