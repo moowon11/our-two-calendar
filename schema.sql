@@ -30,12 +30,6 @@ begin
   return new;
 end; $$;
 
--- 현재 로그인 사용자가 속한 커플 id (RLS 정책의 핵심 축)
-create or replace function public.auth_couple_id()
-returns uuid language sql stable security definer set search_path = public as $$
-  select couple_id from public.members where id = auth.uid();
-$$;
-
 -- =====================================================================
 -- 2) 테이블
 -- =====================================================================
@@ -134,6 +128,13 @@ create table if not exists public.photos (
   attached_to_id   uuid,                             -- event/note id (date면 null)
   created_at       timestamptz not null default now()
 );
+
+-- 현재 로그인 사용자가 속한 커플 id (RLS 정책의 핵심 축)
+-- members 테이블 생성 이후에 정의해야 한다(language sql 함수는 생성 시점에 카탈로그를 검증함).
+create or replace function public.auth_couple_id()
+returns uuid language sql stable security definer set search_path = public as $$
+  select couple_id from public.members where id = auth.uid();
+$$;
 
 -- =====================================================================
 -- 3) 인덱스 (조회 패턴: 커플 + 날짜)
