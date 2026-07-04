@@ -54,6 +54,9 @@
   --color-accent-deep: var(--accent-deep);
   --color-main-deep: var(--main-deep);
   --color-secondary-deep: var(--secondary-deep);
+  --color-main-vivid: var(--main-vivid);
+  --color-secondary-vivid: var(--secondary-vivid);
+  --color-accent-vivid: var(--accent-vivid);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -79,6 +82,10 @@
   --accent-deep: color-mix(in srgb, #c69a6e 70%, var(--ink) 30%);
   --main-deep: color-mix(in srgb, var(--main) 50%, var(--ink) 50%);
   --secondary-deep: color-mix(in srgb, var(--secondary-brand) 45%, var(--ink) 55%);
+  /* 나/너/우리 구분용 진하고 채도 높은 톤 — 달력 칩 배경 전용(원래 파스텔 토큰은 다른 곳에서 그대로 씀) */
+  --main-vivid: #d9714a; /* 진한 코랄 */
+  --secondary-vivid: #6f9457; /* 진한 세이지 그린 */
+  --accent-vivid: #dd9a4a; /* 진한 살구/앰버 */
 
   --background: var(--bg);
   --foreground: var(--ink);
