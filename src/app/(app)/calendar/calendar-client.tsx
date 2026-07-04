@@ -15,6 +15,7 @@ import {
   toDateKey,
 } from "@/lib/date-utils";
 import { resolveOwnerLabel, ownerChipClass } from "@/lib/owner-label";
+import { MemberAvatar } from "@/components/member-avatar";
 import type { Database } from "@/lib/supabase/types";
 
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
@@ -27,13 +28,21 @@ export function CalendarClient({
   startDate,
   myMemberId,
   meColor,
+  meName,
+  meAvatarUrl,
   partnerColor,
+  partnerName,
+  partnerAvatarUrl,
 }: {
   coupleId: string;
   startDate: string | null;
   myMemberId: string;
   meColor: string;
+  meName: string;
+  meAvatarUrl?: string | null;
   partnerColor: string;
+  partnerName: string;
+  partnerAvatarUrl?: string | null;
 }) {
   const today = useMemo(() => new Date(), []);
   const [year, setYear] = useState(today.getFullYear());
@@ -148,11 +157,13 @@ export function CalendarClient({
             )}
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-9 w-9 rounded-full" style={{ backgroundColor: meColor }} />
+            <MemberAvatar url={meAvatarUrl} color={meColor} name={meName} className="h-9 w-9 text-sm" />
             <span className="text-lg text-accent">♥</span>
-            <span
-              className="h-9 w-9 rounded-full"
-              style={{ backgroundColor: partnerColor }}
+            <MemberAvatar
+              url={partnerAvatarUrl}
+              color={partnerColor}
+              name={partnerName}
+              className="h-9 w-9 text-sm"
             />
           </div>
         </div>

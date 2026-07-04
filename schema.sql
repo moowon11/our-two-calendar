@@ -53,9 +53,12 @@ create table if not exists public.members (
   display_name text not null default '',
   color        text not null default '#E8927C',       -- 기본 코랄
   role         text check (role in ('a','b')),        -- a=먼저 만든 사람
+  avatar_url   text,                                  -- photos 버킷 안 경로(<couple_id>/avatars/<member_id>.webp). null이면 이니셜 아바타로 표시
   created_at   timestamptz not null default now(),
   updated_at   timestamptz not null default now()
 );
+-- 이미 만들어진 프로젝트에 컬럼만 추가할 때(테이블은 그대로 두고):
+alter table public.members add column if not exists avatar_url text;
 
 -- 2-3) 일정
 --   owner_kind: 'individual'(개인 일정) | 'shared'(둘의 일정)

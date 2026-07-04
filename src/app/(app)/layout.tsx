@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getSessionInfo } from "@/lib/supabase/session";
 import { createClient } from "@/lib/supabase/server";
 import { nextOccurrence, ddayLabel } from "@/lib/date-utils";
+import { signAvatarUrl } from "@/lib/supabase/avatar";
 import { Sidebar } from "@/components/app-shell/sidebar";
 import { BottomNav } from "@/components/app-shell/bottom-nav";
 import { MobileHeader } from "@/components/app-shell/mobile-header";
@@ -18,14 +19,17 @@ export default async function AppLayout({
   const { member, couple, partner } = session;
   const supabase = await createClient();
 
-  const [{ count: unreadCount }, { data: anniversaries }] = await Promise.all([
-    supabase
-      .from("messages")
-      .select("id", { count: "exact", head: true })
-      .eq("to_id", member.id)
-      .is("read_at", null),
-    supabase.from("anniversaries").select("*").eq("couple_id", couple.id),
-  ]);
+  const [{ count: unreadCount }, { data: anniversaries }, meAvatarUrl, partnerAvatarUrl] =
+    await Promise.all([
+      supabase
+        .from("messages")
+        .select("id", { count: "exact", head: true })
+        .eq("to_id", member.id)
+        .is("read_at", null),
+      supabase.from("anniversaries").select("*").eq("couple_id", couple.id),
+      signAvatarUrl(supabase, member.avatar_url),
+      signAvatarUrl(supabase, partner?.avatar_url),
+    ]);
 
   let upcomingLabel: { title: string; dday: string } | null = null;
   if (anniversaries && anniversaries.length > 0) {
@@ -48,13 +52,22 @@ export default async function AppLayout({
       <Sidebar
         meColor={meColor}
         meName={meName}
+        meAvatarUrl={meAvatarUrl}
         partnerColor={partnerColor}
         partnerName={partnerName}
+        partnerAvatarUrl={partnerAvatarUrl}
         unreadCount={unreadCount ?? 0}
         upcomingLabel={upcomingLabel}
       />
       <div className="flex min-h-screen flex-1 flex-col">
-        <MobileHeader meColor={meColor} partnerColor={partnerColor} />
+        <MobileHeader
+          meColor={meColor}
+          meName={meName}
+          meAvatarUrl={meAvatarUrl}
+          partnerColor={partnerColor}
+          partnerName={partnerName}
+          partnerAvatarUrl={partnerAvatarUrl}
+        />
         <main className="flex-1 pb-[86px] lg:pb-0">{children}</main>
       </div>
       <BottomNav unreadCount={unreadCount ?? 0} />

@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSessionInfo } from "@/lib/supabase/session";
+import { createClient } from "@/lib/supabase/server";
+import { signAvatarUrl } from "@/lib/supabase/avatar";
 import { CalendarClient } from "./calendar-client";
 
 export default async function CalendarPage() {
@@ -7,6 +9,11 @@ export default async function CalendarPage() {
   if (session.status !== "connected") redirect("/login");
 
   const { member, couple, partner } = session;
+  const supabase = await createClient();
+  const [meAvatarUrl, partnerAvatarUrl] = await Promise.all([
+    signAvatarUrl(supabase, member.avatar_url),
+    signAvatarUrl(supabase, partner?.avatar_url),
+  ]);
 
   return (
     <CalendarClient
@@ -14,7 +21,11 @@ export default async function CalendarPage() {
       startDate={couple.start_date}
       myMemberId={member.id}
       meColor={member.color}
+      meName={member.display_name || "나"}
+      meAvatarUrl={meAvatarUrl}
       partnerColor={partner?.color ?? "#A7B99A"}
+      partnerName={partner?.display_name || "상대"}
+      partnerAvatarUrl={partnerAvatarUrl}
     />
   );
 }

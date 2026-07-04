@@ -4,19 +4,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/lib/nav-items";
 import { cn } from "@/lib/utils";
+import { MemberAvatar } from "@/components/member-avatar";
 
 export function Sidebar({
   meColor,
   meName,
+  meAvatarUrl,
   partnerColor,
   partnerName,
+  partnerAvatarUrl,
   unreadCount,
   upcomingLabel,
 }: {
   meColor: string;
   meName: string;
+  meAvatarUrl?: string | null;
   partnerColor: string;
   partnerName: string;
+  partnerAvatarUrl?: string | null;
   unreadCount: number;
   upcomingLabel: { title: string; dday: string } | null;
 }) {
@@ -32,14 +37,13 @@ export function Sidebar({
       </div>
 
       <div className="flex items-center gap-2 rounded-2xl border border-line bg-card px-3.5 py-3">
-        <span
-          className="h-7 w-7 shrink-0 rounded-full"
-          style={{ backgroundColor: meColor }}
-        />
+        <MemberAvatar url={meAvatarUrl} color={meColor} name={meName} className="h-7 w-7 text-xs" />
         <span className="text-sm text-accent">♥</span>
-        <span
-          className="h-7 w-7 shrink-0 rounded-full"
-          style={{ backgroundColor: partnerColor }}
+        <MemberAvatar
+          url={partnerAvatarUrl}
+          color={partnerColor}
+          name={partnerName}
+          className="h-7 w-7 text-xs"
         />
         <span className="ml-1 truncate font-hand text-lg text-foreground">
           {meName} &amp; {partnerName}

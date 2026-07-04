@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { createClient } from "@/lib/supabase/client";
+import { signAvatarUrl } from "@/lib/supabase/avatar";
+import { MemberAvatar } from "@/components/member-avatar";
 import {
   createCoupleAction,
   joinCoupleAction,
@@ -16,9 +18,14 @@ import {
 } from "./actions";
 
 const createInitial: CreateCoupleState = { error: null, code: null };
-const joinInitial: JoinCoupleState = { error: null, joined: false };
+const joinInitial: JoinCoupleState = { error: null, joined: false, coupleId: null };
 
-type Member = { id: string; display_name: string };
+type Member = {
+  id: string;
+  display_name: string;
+  color: string;
+  avatar_url: string | null;
+};
 
 function CreateSubmitButton() {
   const { pending } = useFormStatus();
@@ -48,6 +55,7 @@ export function ConnectClient({ userId }: { userId: string }) {
   const [view, setView] = useState<"form" | "waiting" | "success">("form");
   const [coupleId, setCoupleId] = useState<string | null>(null);
   const [partners, setPartners] = useState<Member[]>([]);
+  const [avatarUrls, setAvatarUrls] = useState<Record<string, string | null>>({});
 
   // 내가 코드를 만들면 대기 화면으로 전환하고, couple_id를 알아내 실시간 구독을 건다.
   useEffect(() => {
@@ -64,10 +72,25 @@ export function ConnectClient({ userId }: { userId: string }) {
     })();
   }, [createState.code, view]);
 
-  // 상대가 코드를 입력해 들어오면 즉시 성공 화면으로.
+  // 상대가 코드를 입력해 들어오면 즉시 성공 화면으로 — 멤버 정보(아바타 포함)도 채워둔다.
   useEffect(() => {
-    if (joinState.joined) setView("success");
-  }, [joinState.joined]);
+    if (!joinState.joined || !joinState.coupleId) return;
+    const supabase = createClient();
+    (async () => {
+      const { data } = await supabase
+        .from("members")
+        .select("id, display_name, color, avatar_url")
+        .eq("couple_id", joinState.coupleId!);
+      if (data) {
+        setPartners(data);
+        const entries = await Promise.all(
+          data.map(async (m) => [m.id, await signAvatarUrl(supabase, m.avatar_url)] as const),
+        );
+        setAvatarUrls(Object.fromEntries(entries));
+      }
+      setView("success");
+    })();
+  }, [joinState.joined, joinState.coupleId]);
 
   // 대기 중일 때 members 테이블 실시간 구독 — 상대가 들어오면 성공 화면으로.
   useEffect(() => {
@@ -77,10 +100,14 @@ export function ConnectClient({ userId }: { userId: string }) {
     const checkPartner = async () => {
       const { data } = await supabase
         .from("members")
-        .select("id, display_name")
+        .select("id, display_name, color, avatar_url")
         .eq("couple_id", coupleId);
       if (data && data.length >= 2) {
         setPartners(data);
+        const entries = await Promise.all(
+          data.map(async (m) => [m.id, await signAvatarUrl(supabase, m.avatar_url)] as const),
+        );
+        setAvatarUrls(Object.fromEntries(entries));
         setView("success");
       }
     };
@@ -117,7 +144,12 @@ export function ConnectClient({ userId }: { userId: string }) {
         </p>
         {(me || partner) && (
           <div className="flex items-center gap-3 rounded-2xl bg-muted px-5 py-3.5">
-            <span className="h-[30px] w-[30px] rounded-full bg-primary" />
+            <MemberAvatar
+              url={me ? avatarUrls[me.id] : null}
+              color={me?.color ?? "#E8927C"}
+              name={me?.display_name || "나"}
+              className="h-[30px] w-[30px] text-xs"
+            />
             <span className="font-hand text-2xl text-foreground">
               {me?.display_name || "나"}
             </span>
@@ -125,7 +157,12 @@ export function ConnectClient({ userId }: { userId: string }) {
             <span className="font-hand text-2xl text-foreground">
               {partner?.display_name || "상대"}
             </span>
-            <span className="h-[30px] w-[30px] rounded-full bg-secondary" />
+            <MemberAvatar
+              url={partner ? avatarUrls[partner.id] : null}
+              color={partner?.color ?? "#A7B99A"}
+              name={partner?.display_name || "상대"}
+              className="h-[30px] w-[30px] text-xs"
+            />
           </div>
         )}
         <Button asChild className="h-12 px-10 font-hand text-xl font-bold">

@@ -1,18 +1,29 @@
 import { redirect } from "next/navigation";
 import { getSessionInfo } from "@/lib/supabase/session";
+import { createClient } from "@/lib/supabase/server";
+import { signAvatarUrl } from "@/lib/supabase/avatar";
 import { signOutAction } from "@/lib/supabase/actions";
 import { Button } from "@/components/ui/button";
 import { UnlinkCoupleButton } from "./unlink-couple-button";
+import { AvatarUploader } from "./avatar-uploader";
 
 export default async function SettingsPage() {
   const session = await getSessionInfo();
   if (session.status !== "connected") redirect("/login");
 
   const { member, couple, partner } = session;
+  const supabase = await createClient();
+  const meAvatarUrl = await signAvatarUrl(supabase, member.avatar_url);
 
   return (
     <div className="mx-auto flex max-w-md flex-col gap-6 px-5 py-8 lg:px-10 lg:py-10">
       <h1 className="font-hand text-3xl font-bold text-foreground">설정</h1>
+
+      <AvatarUploader
+        color={member.color}
+        name={member.display_name || "나"}
+        avatarUrl={meAvatarUrl}
+      />
 
       <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-5">
         <div className="flex items-center justify-between text-sm">

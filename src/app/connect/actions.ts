@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 
 export type CreateCoupleState = { error: string | null; code: string | null };
-export type JoinCoupleState = { error: string | null; joined: boolean };
+export type JoinCoupleState = { error: string | null; joined: boolean; coupleId: string | null };
 
 export async function createCoupleAction(
   _prevState: CreateCoupleState,
@@ -38,11 +38,11 @@ export async function joinCoupleAction(
 ): Promise<JoinCoupleState> {
   const code = String(formData.get("code") ?? "").trim();
   if (!code) {
-    return { error: "받은 코드를 입력해줘", joined: false };
+    return { error: "받은 코드를 입력해줘", joined: false, coupleId: null };
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.rpc("join_couple", {
+  const { data, error } = await supabase.rpc("join_couple", {
     p_code: code,
     p_display_name: "",
   });
@@ -53,8 +53,8 @@ export async function joinCoupleAction(
       : error.message.includes("couple is full")
         ? "이미 두 명이 연결된 커플이야"
         : "연결하지 못했어. 다시 시도해줄래?";
-    return { error: message, joined: false };
+    return { error: message, joined: false, coupleId: null };
   }
 
-  return { error: null, joined: true };
+  return { error: null, joined: true, coupleId: data as string };
 }
