@@ -17,6 +17,7 @@ import {
   toDateKey,
 } from "@/lib/date-utils";
 import { resolveOwnerLabel, ownerChipClass } from "@/lib/owner-label";
+import { getKoreanHolidaysForMonth } from "@/lib/korean-holidays";
 import { MemberAvatar } from "@/components/member-avatar";
 import type { Database } from "@/lib/supabase/types";
 
@@ -115,6 +116,11 @@ export function CalendarClient({
   const anniversariesByDate = useMemo(
     () => expandAnniversariesForMonth(anniversaries, year, month),
     [anniversaries, year, month],
+  );
+
+  const holidaysByDate = useMemo(
+    () => getKoreanHolidaysForMonth(year, month),
+    [year, month],
   );
 
   const upcoming = useMemo(() => {
@@ -303,8 +309,14 @@ export function CalendarClient({
               const isToday = key === todayKey;
               const dayEvents = eventsByDate.get(key) ?? [];
               const dayAnniversaries = anniversariesByDate.get(key) ?? [];
+              const dayHolidays = holidaysByDate.get(key) ?? [];
               const isFlashing = flashDate === key;
               const chips = [
+                ...dayHolidays.map((h) => ({
+                  chipKey: `holiday-${h.date}-${h.name}`,
+                  label: h.name,
+                  className: "bg-destructive/15 text-destructive font-semibold",
+                })),
                 ...dayAnniversaries.map((a) => ({
                   chipKey: `ann-${a.id}`,
                   label: a.title,
@@ -335,7 +347,7 @@ export function CalendarClient({
                     className={`text-xs ${
                       isToday
                         ? "font-bold text-primary"
-                        : date.getDay() === 0
+                        : date.getDay() === 0 || dayHolidays.length > 0
                           ? "text-destructive"
                           : date.getDay() === 6
                             ? "text-secondary"

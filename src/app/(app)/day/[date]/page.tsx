@@ -8,6 +8,7 @@ import {
   expandEventsForMonth,
   parseDateKey,
 } from "@/lib/date-utils";
+import { getKoreanHolidaysForMonth } from "@/lib/korean-holidays";
 import { resolveOwnerLabel, ownerColorClass } from "@/lib/owner-label";
 import { Button } from "@/components/ui/button";
 import { NoteForm } from "./note-form";
@@ -54,6 +55,8 @@ export default async function DayDetailPage({
     expandEventsForMonth(eventsRes.data, d.getFullYear(), d.getMonth() + 1).get(date) ?? [];
   const dayAnniversaries =
     expandAnniversariesForMonth(annRes.data, d.getFullYear(), d.getMonth() + 1).get(date) ?? [];
+  const dayHolidays =
+    getKoreanHolidaysForMonth(d.getFullYear(), d.getMonth() + 1).get(date) ?? [];
   const notes = notesRes.data;
   const photos = photosRes.data;
   const myNote = notes.find((n) => n.author_id === member.id);
@@ -95,6 +98,11 @@ export default async function DayDetailPage({
         <h1 className="font-hand text-2xl font-bold text-foreground lg:text-3xl">
           {d.getFullYear()}년 {d.getMonth() + 1}월 {d.getDate()}일 ({weekday})
         </h1>
+        {dayHolidays.length > 0 && (
+          <span className="rounded-full bg-destructive/15 px-2.5 py-1 text-xs font-semibold text-destructive">
+            {dayHolidays.map((h) => h.name).join(", ")}
+          </span>
+        )}
       </div>
 
       {isEmpty && (
