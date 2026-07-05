@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { useRealtimeTable } from "@/lib/supabase/use-realtime-table";
@@ -29,6 +30,7 @@ function formatTime(iso: string): string {
 }
 
 export function NotificationsPanel({ myMemberId }: { myMemberId: string }) {
+  const router = useRouter();
   const [status, setStatus] = useState<"loading" | "error" | "success">("loading");
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
 
@@ -55,8 +57,11 @@ export function NotificationsPanel({ myMemberId }: { myMemberId: string }) {
         "id",
         unreadIds,
       );
+      // 사이드바/모바일 헤더의 "설정" 빨간 점은 layout.tsx(서버 컴포넌트)가 렌더 시점에
+      // 계산해 내려주는 값이라, 방금 읽음 처리한 걸 반영하려면 레이아웃을 다시 불러야 한다.
+      router.refresh();
     }
-  }, [myMemberId]);
+  }, [myMemberId, router]);
 
   useEffect(() => {
     load();
