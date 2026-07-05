@@ -14,6 +14,7 @@ export function Sidebar({
   partnerName,
   partnerAvatarUrl,
   unreadCount,
+  unreadNotifCount,
   upcomingLabel,
 }: {
   meColor: string;
@@ -23,6 +24,7 @@ export function Sidebar({
   partnerName: string;
   partnerAvatarUrl?: string | null;
   unreadCount: number;
+  unreadNotifCount: number;
   upcomingLabel: { title: string; dday: string } | null;
 }) {
   const pathname = usePathname();
@@ -77,13 +79,16 @@ export function Sidebar({
         <Link
           href="/settings"
           className={cn(
-            "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm transition-colors",
+            "relative flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm transition-colors",
             pathname?.startsWith("/settings")
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:bg-muted hover:text-foreground",
           )}
         >
           <span>⚙️</span>설정
+          {unreadNotifCount > 0 && (
+            <span className="ml-auto h-2 w-2 rounded-full bg-destructive" />
+          )}
         </Link>
       </nav>
 

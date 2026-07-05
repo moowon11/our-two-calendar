@@ -22,6 +22,7 @@ export default async function MessagesPage() {
       partnerName={session.partner.display_name || "상대"}
       partnerColor={session.partner.color}
       meColor={session.member.color}
+      meName={session.member.display_name || "상대방"}
     />
   );
 }

@@ -20,17 +20,27 @@ export default async function AppLayout({
   const { member, couple, partner } = session;
   const supabase = await createClient();
 
-  const [{ count: unreadCount }, { data: anniversaries }, meAvatarUrl, partnerAvatarUrl] =
-    await Promise.all([
-      supabase
-        .from("messages")
-        .select("id", { count: "exact", head: true })
-        .eq("to_id", member.id)
-        .is("read_at", null),
-      supabase.from("anniversaries").select("*").eq("couple_id", couple.id),
-      signAvatarUrl(supabase, member.avatar_url),
-      signAvatarUrl(supabase, partner?.avatar_url),
-    ]);
+  const [
+    { count: unreadCount },
+    { count: unreadNotifCount },
+    { data: anniversaries },
+    meAvatarUrl,
+    partnerAvatarUrl,
+  ] = await Promise.all([
+    supabase
+      .from("messages")
+      .select("id", { count: "exact", head: true })
+      .eq("to_id", member.id)
+      .is("read_at", null),
+    supabase
+      .from("notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("recipient_id", member.id)
+      .is("read_at", null),
+    supabase.from("anniversaries").select("*").eq("couple_id", couple.id),
+    signAvatarUrl(supabase, member.avatar_url),
+    signAvatarUrl(supabase, partner?.avatar_url),
+  ]);
 
   let upcomingLabel: { title: string; dday: string } | null = null;
   if (anniversaries && anniversaries.length > 0) {
@@ -58,6 +68,7 @@ export default async function AppLayout({
         partnerName={partnerName}
         partnerAvatarUrl={partnerAvatarUrl}
         unreadCount={unreadCount ?? 0}
+        unreadNotifCount={unreadNotifCount ?? 0}
         upcomingLabel={upcomingLabel}
       />
       <div className="flex min-h-screen flex-1 flex-col">
@@ -68,6 +79,7 @@ export default async function AppLayout({
           partnerColor={partnerColor}
           partnerName={partnerName}
           partnerAvatarUrl={partnerAvatarUrl}
+          unreadNotifCount={unreadNotifCount ?? 0}
         />
         <main className="flex-1 pb-[86px] lg:pb-0">
           <PullToRefresh>{children}</PullToRefresh>

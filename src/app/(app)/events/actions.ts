@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionInfo } from "@/lib/supabase/session";
+import { createNotification } from "@/lib/notifications";
 import type { Database } from "@/lib/supabase/types";
 
 type RepeatRule = Database["public"]["Tables"]["events"]["Row"]["repeat_rule"];
@@ -68,6 +69,18 @@ export async function saveEventAction(
 
   if (result.error || !result.data) {
     return { error: "저장하지 못했어. 방금 쓴 내용은 그대로 남아있어", eventId: id, date };
+  }
+
+  if (!id && session.partner) {
+    const actorName = session.member.display_name || "상대방";
+    await createNotification(supabase, {
+      coupleId: session.couple.id,
+      recipientId: session.partner.id,
+      type: "event",
+      title: `${actorName}님이 새 일정을 추가했어: ${title}`,
+      refDate: date,
+      refId: result.data.id,
+    });
   }
 
   revalidatePath("/calendar");

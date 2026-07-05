@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { UnlinkCoupleButton } from "./unlink-couple-button";
 import { AvatarUploader } from "./avatar-uploader";
 import { NicknameForm } from "./nickname-form";
+import { NotificationsPanel } from "./notifications-panel";
 
 export default async function SettingsPage() {
   const session = await getSessionInfo();
@@ -19,6 +20,8 @@ export default async function SettingsPage() {
   return (
     <div className="mx-auto flex max-w-md flex-col gap-6 px-5 py-8 lg:px-10 lg:py-10">
       <h1 className="font-hand text-3xl font-bold text-foreground">설정</h1>
+
+      <NotificationsPanel myMemberId={member.id} />
 
       <AvatarUploader
         color={member.color}

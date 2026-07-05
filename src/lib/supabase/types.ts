@@ -5,6 +5,7 @@ type OwnerKind = "individual" | "shared";
 type RepeatRule = "none" | "weekly" | "monthly" | "yearly";
 type MemberRole = "a" | "b";
 type AttachedToType = "event" | "note" | "date";
+type NotificationType = "event" | "anniversary" | "message";
 
 export interface Database {
   public: {
@@ -199,6 +200,34 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["photos"]["Insert"]>;
+        Relationships: [];
+      };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          couple_id: string;
+          recipient_id: string;
+          type: NotificationType;
+          title: string;
+          ref_date: string | null;
+          ref_id: string | null;
+          read_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          couple_id: string;
+          recipient_id: string;
+          type: NotificationType;
+          title: string;
+          ref_date?: string | null;
+          ref_id?: string | null;
+          read_at?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["notifications"]["Insert"]>;
         Relationships: [];
       };
     };

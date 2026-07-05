@@ -144,6 +144,37 @@ create table if not exists public.photos (
   created_at       timestamptz not null default now()
 );
 
+-- 2-8) 알림 (일정/기념일 추가, 쪽지 전송을 상대방에게 알림)
+--   couple 공용이 아니라 recipient_id(받는 사람)만 볼 수 있는 개인화된 알림.
+create table if not exists public.notifications (
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid not null references auth.users(id) on delete cascade,      -- 알림을 발생시킨 사람(작성자)
+  couple_id    uuid not null references public.couples(id) on delete cascade,
+  recipient_id uuid not null references public.members(id) on delete cascade, -- 알림을 받아야 할 사람
+  type         text not null check (type in ('event','anniversary','message')),
+  title        text not null,          -- 알림 문구(예: "지은님이 새 일정을 추가했어: 생일파티")
+  ref_date     date,                   -- 관련 날짜(일정/기념일 클릭 시 이동할 날짜)
+  ref_id       uuid,                   -- 원본 레코드 id(선택, 원본이 지워져도 알림 문구는 남는다)
+  read_at      timestamptz,
+  created_at   timestamptz not null default now()
+);
+
+create index if not exists idx_notifications_recipient on public.notifications(recipient_id, created_at desc);
+
+alter table public.notifications enable row level security;
+
+drop policy if exists notifications_select on public.notifications;
+create policy notifications_select on public.notifications for select
+  using (recipient_id = auth.uid());
+
+drop policy if exists notifications_insert on public.notifications;
+create policy notifications_insert on public.notifications for insert
+  with check (couple_id = public.auth_couple_id());
+
+drop policy if exists notifications_update on public.notifications;
+create policy notifications_update on public.notifications for update
+  using (recipient_id = auth.uid());
+
 -- 현재 로그인 사용자가 속한 커플 id (RLS 정책의 핵심 축)
 -- members 테이블 생성 이후에 정의해야 한다(language sql 함수는 생성 시점에 카탈로그를 검증함).
 create or replace function public.auth_couple_id()
@@ -182,7 +213,7 @@ end $$;
 do $$
 declare t text;
 begin
-  foreach t in array array['couples','members','events','anniversaries','notes','messages','photos']
+  foreach t in array array['couples','members','events','anniversaries','notes','messages','photos','notifications']
   loop
     execute format('drop trigger if exists trg_set_user_id on public.%I;', t);
     execute format('create trigger trg_set_user_id before insert on public.%I
@@ -344,7 +375,7 @@ create policy photos_update on storage.objects for update
 do $$
 declare t text;
 begin
-  foreach t in array array['events','anniversaries','notes','messages','photos','members']
+  foreach t in array array['events','anniversaries','notes','messages','photos','members','notifications']
   loop
     -- 이미 등록돼 있으면 무시
     begin

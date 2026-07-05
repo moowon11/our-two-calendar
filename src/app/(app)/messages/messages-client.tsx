@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { useRealtimeTable } from "@/lib/supabase/use-realtime-table";
+import { createNotification } from "@/lib/notifications";
 import type { Database } from "@/lib/supabase/types";
 
 type MessageRow = Database["public"]["Tables"]["messages"]["Row"];
@@ -17,6 +18,7 @@ export function MessagesClient({
   partnerName,
   partnerColor,
   meColor,
+  meName,
 }: {
   coupleId: string;
   myMemberId: string;
@@ -24,6 +26,7 @@ export function MessagesClient({
   partnerName: string;
   partnerColor: string;
   meColor: string;
+  meName: string;
 }) {
   const [status, setStatus] = useState<"loading" | "error" | "success">("loading");
   const [messages, setMessages] = useState<MessageRow[]>([]);
@@ -98,6 +101,14 @@ export function MessagesClient({
     if (!error && data) {
       setDraft("");
       setMessages((prev) => (prev.some((m) => m.id === data.id) ? prev : [...prev, data]));
+      const preview = content.length > 40 ? `${content.slice(0, 40)}…` : content;
+      await createNotification(supabase, {
+        coupleId,
+        recipientId: partnerId,
+        type: "message",
+        title: `${meName}님의 쪽지: ${preview}`,
+        refId: data.id,
+      });
     }
   };
 
