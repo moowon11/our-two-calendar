@@ -270,6 +270,15 @@ begin
   end loop;
 end $$;
 
+-- 5-8) messages: 받는 사람(to_id)이 read_at만 표시할 수 있게 별도 update 정책 추가.
+--      위 messages_all의 with check는 user_id(보낸 사람) = auth.uid()만 허용해서
+--      받는 사람이 읽음 처리를 하면 RLS에 막혀 read_at이 절대 저장되지 않았다.
+drop policy if exists messages_mark_read on public.messages;
+create policy messages_mark_read on public.messages
+  for update
+  using (to_id = auth.uid())
+  with check (to_id = auth.uid());
+
 -- =====================================================================
 -- 6) RPC : 커플 생성 / 커플 참여 (RLS 우회가 필요한 안전 지점만 SECURITY DEFINER)
 -- =====================================================================
