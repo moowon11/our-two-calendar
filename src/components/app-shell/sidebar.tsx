@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/lib/nav-items";
 import { cn } from "@/lib/utils";
 import { MemberAvatar } from "@/components/member-avatar";
+import { useUnreadMessageCount } from "@/lib/supabase/use-unread-messages";
 
 export function Sidebar({
   meColor,
@@ -13,7 +14,8 @@ export function Sidebar({
   partnerColor,
   partnerName,
   partnerAvatarUrl,
-  unreadCount,
+  myMemberId,
+  initialUnreadCount,
   unreadNotifCount,
   upcomingLabel,
 }: {
@@ -23,11 +25,13 @@ export function Sidebar({
   partnerColor: string;
   partnerName: string;
   partnerAvatarUrl?: string | null;
-  unreadCount: number;
+  myMemberId: string;
+  initialUnreadCount: number;
   unreadNotifCount: number;
   upcomingLabel: { title: string; dday: string } | null;
 }) {
   const pathname = usePathname();
+  const unreadCount = useUnreadMessageCount(myMemberId, initialUnreadCount);
 
   return (
     <aside className="hidden w-[236px] shrink-0 flex-col gap-7 border-r border-line bg-sidebar p-5.5 lg:flex">

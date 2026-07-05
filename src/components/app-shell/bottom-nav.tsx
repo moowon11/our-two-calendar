@@ -4,9 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/lib/nav-items";
 import { cn } from "@/lib/utils";
+import { useUnreadMessageCount } from "@/lib/supabase/use-unread-messages";
 
-export function BottomNav({ unreadCount }: { unreadCount: number }) {
+export function BottomNav({
+  myMemberId,
+  initialUnreadCount,
+}: {
+  myMemberId: string;
+  initialUnreadCount: number;
+}) {
   const pathname = usePathname();
+  const unreadCount = useUnreadMessageCount(myMemberId, initialUnreadCount);
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 flex h-[70px] items-center justify-around border-t border-line bg-card px-2 lg:hidden">

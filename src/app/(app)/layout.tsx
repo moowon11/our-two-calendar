@@ -67,7 +67,8 @@ export default async function AppLayout({
         partnerColor={partnerColor}
         partnerName={partnerName}
         partnerAvatarUrl={partnerAvatarUrl}
-        unreadCount={unreadCount ?? 0}
+        myMemberId={member.id}
+        initialUnreadCount={unreadCount ?? 0}
         unreadNotifCount={unreadNotifCount ?? 0}
         upcomingLabel={upcomingLabel}
       />
@@ -85,7 +86,7 @@ export default async function AppLayout({
           <PullToRefresh>{children}</PullToRefresh>
         </main>
       </div>
-      <BottomNav unreadCount={unreadCount ?? 0} />
+      <BottomNav myMemberId={member.id} initialUnreadCount={unreadCount ?? 0} />
     </div>
   );
 }
