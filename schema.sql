@@ -165,7 +165,7 @@ alter table public.notifications enable row level security;
 
 drop policy if exists notifications_select on public.notifications;
 create policy notifications_select on public.notifications for select
-  using (recipient_id = auth.uid());
+  using (recipient_id = (select auth.uid()));
 
 drop policy if exists notifications_insert on public.notifications;
 create policy notifications_insert on public.notifications for insert
@@ -173,13 +173,13 @@ create policy notifications_insert on public.notifications for insert
 
 drop policy if exists notifications_update on public.notifications;
 create policy notifications_update on public.notifications for update
-  using (recipient_id = auth.uid());
+  using (recipient_id = (select auth.uid()));
 
 -- 현재 로그인 사용자가 속한 커플 id (RLS 정책의 핵심 축)
 -- members 테이블 생성 이후에 정의해야 한다(language sql 함수는 생성 시점에 카탈로그를 검증함).
 create or replace function public.auth_couple_id()
 returns uuid language sql stable security definer set search_path = public as $$
-  select couple_id from public.members where id = auth.uid();
+  select couple_id from public.members where id = (select auth.uid());
 $$;
 
 -- =====================================================================
@@ -193,6 +193,13 @@ create index if not exists idx_messages_couple_time   on public.messages(couple_
 create index if not exists idx_photos_couple_date     on public.photos(couple_id, photo_date desc);
 create index if not exists idx_photos_attached        on public.photos(attached_to_type, attached_to_id);
 create unique index if not exists idx_couples_invite  on public.couples(invite_code);
+
+-- RLS 정책·조회에서 실제로 필터링에 쓰이는 FK 컬럼인데 자동 인덱싱되지 않는 것들.
+create index if not exists idx_messages_to_id    on public.messages(to_id);
+create index if not exists idx_messages_from_id  on public.messages(from_id);
+create index if not exists idx_couples_user_id   on public.couples(user_id);
+create index if not exists idx_events_owner_id   on public.events(owner_id);
+create index if not exists idx_notes_author_id   on public.notes(author_id);
 
 -- =====================================================================
 -- 4) 트리거 (updated_at 자동 / user_id 자동)
@@ -235,24 +242,24 @@ alter table public.photos        enable row level security;
 -- 5-1) couples : 생성자이거나 내가 속한 커플
 drop policy if exists couples_select on public.couples;
 create policy couples_select on public.couples for select
-  using (user_id = auth.uid() or id = public.auth_couple_id());
+  using (user_id = (select auth.uid()) or id = public.auth_couple_id());
 drop policy if exists couples_insert on public.couples;
 create policy couples_insert on public.couples for insert
-  with check (user_id = auth.uid());
+  with check (user_id = (select auth.uid()));
 drop policy if exists couples_update on public.couples;
 create policy couples_update on public.couples for update
-  using (id = public.auth_couple_id() or user_id = auth.uid());
+  using (id = public.auth_couple_id() or user_id = (select auth.uid()));
 
 -- 5-2) members : 자기 자신 + 같은 커플 파트너 조회, 수정은 자기 행만
 drop policy if exists members_select on public.members;
 create policy members_select on public.members for select
-  using (id = auth.uid() or couple_id = public.auth_couple_id());
+  using (id = (select auth.uid()) or couple_id = public.auth_couple_id());
 drop policy if exists members_insert on public.members;
 create policy members_insert on public.members for insert
-  with check (id = auth.uid());          -- 남의 멤버 행 못 만든다
+  with check (id = (select auth.uid()));          -- 남의 멤버 행 못 만든다
 drop policy if exists members_update on public.members;
 create policy members_update on public.members for update
-  using (id = auth.uid());
+  using (id = (select auth.uid()));
 
 -- 5-3~7) 콘텐츠 테이블 공통: 내가 속한 커플의 행만 CRUD
 do $$
@@ -265,7 +272,7 @@ begin
       create policy %1$s_all on public.%1$s
       for all
       using (couple_id = public.auth_couple_id())
-      with check (couple_id = public.auth_couple_id() and user_id = auth.uid());
+      with check (couple_id = public.auth_couple_id() and user_id = (select auth.uid()));
     $f$, t);
   end loop;
 end $$;
@@ -276,8 +283,8 @@ end $$;
 drop policy if exists messages_mark_read on public.messages;
 create policy messages_mark_read on public.messages
   for update
-  using (to_id = auth.uid())
-  with check (to_id = auth.uid());
+  using (to_id = (select auth.uid()))
+  with check (to_id = (select auth.uid()));
 
 -- =====================================================================
 -- 6) RPC : 커플 생성 / 커플 참여 (RLS 우회가 필요한 안전 지점만 SECURITY DEFINER)

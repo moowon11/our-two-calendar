@@ -1,8 +1,12 @@
+import { cache } from "react";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import type { Database } from "./types";
 
-export async function createClient() {
+// cache()로 감싸서 같은 요청 안에서는 항상 같은 클라이언트 인스턴스를 재사용한다.
+// (레이아웃/페이지가 각자 createClient()를 불러도 signAvatarUrl 같은 캐시 함수의
+// 인자 아이덴티티가 요청마다 일치하게 하기 위함 — 쿠키만 읽고 네트워크 호출은 없어 안전.)
+export const createClient = cache(async () => {
   const cookieStore = await cookies();
 
   return createServerClient<Database>(
@@ -25,4 +29,4 @@ export async function createClient() {
       },
     },
   );
-}
+});

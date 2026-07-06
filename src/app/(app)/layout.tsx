@@ -3,6 +3,7 @@ import { getSessionInfo } from "@/lib/supabase/session";
 import { createClient } from "@/lib/supabase/server";
 import { nextOccurrence, ddayLabel } from "@/lib/date-utils";
 import { signAvatarUrl } from "@/lib/supabase/avatar";
+import { getCoupleAnniversaries } from "@/lib/supabase/anniversaries";
 import { Sidebar } from "@/components/app-shell/sidebar";
 import { BottomNav } from "@/components/app-shell/bottom-nav";
 import { MobileHeader } from "@/components/app-shell/mobile-header";
@@ -23,7 +24,7 @@ export default async function AppLayout({
   const [
     { count: unreadCount },
     { count: unreadNotifCount },
-    { data: anniversaries },
+    anniversaries,
     meAvatarUrl,
     partnerAvatarUrl,
   ] = await Promise.all([
@@ -37,13 +38,13 @@ export default async function AppLayout({
       .select("id", { count: "exact", head: true })
       .eq("recipient_id", member.id)
       .is("read_at", null),
-    supabase.from("anniversaries").select("*").eq("couple_id", couple.id),
+    getCoupleAnniversaries(couple.id),
     signAvatarUrl(supabase, member.avatar_url),
     signAvatarUrl(supabase, partner?.avatar_url),
   ]);
 
   let upcomingLabel: { title: string; dday: string } | null = null;
-  if (anniversaries && anniversaries.length > 0) {
+  if (anniversaries.length > 0) {
     const withNext = anniversaries.map((a) => ({
       a,
       next: nextOccurrence(a),

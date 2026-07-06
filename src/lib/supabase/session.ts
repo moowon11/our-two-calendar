@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "./server";
 import type { Database } from "./types";
 
@@ -10,7 +11,8 @@ export type SessionInfo =
   | { status: "connected"; member: Member; couple: Couple; partner: Member | null };
 
 // 로그인/커플연결/앱 화면 세 갈래 라우팅 판단에 쓰는 단일 진입점.
-export async function getSessionInfo(): Promise<SessionInfo> {
+// cache()로 감싸서 같은 요청(레이아웃 + 페이지가 각자 호출해도) 안에서는 한 번만 조회한다.
+async function getSessionInfoUncached(): Promise<SessionInfo> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -30,18 +32,18 @@ export async function getSessionInfo(): Promise<SessionInfo> {
     return { status: "no-couple", member, userId: user.id };
   }
 
-  const { data: couple } = await supabase
-    .from("couples")
-    .select("*")
-    .eq("id", member.couple_id)
-    .single();
-
-  const { data: partner } = await supabase
-    .from("members")
-    .select("*")
-    .eq("couple_id", member.couple_id)
-    .neq("id", user.id)
-    .maybeSingle();
+  // couple과 partner 조회는 서로 결과에 의존하지 않으므로 병렬로 실행한다.
+  const [{ data: couple }, { data: partner }] = await Promise.all([
+    supabase.from("couples").select("*").eq("id", member.couple_id).single(),
+    supabase
+      .from("members")
+      .select("*")
+      .eq("couple_id", member.couple_id)
+      .neq("id", user.id)
+      .maybeSingle(),
+  ]);
 
   return { status: "connected", member, couple: couple!, partner };
 }
+
+export const getSessionInfo = cache(getSessionInfoUncached);

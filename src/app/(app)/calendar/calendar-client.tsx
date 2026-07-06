@@ -36,6 +36,7 @@ export function CalendarClient({
   partnerColor,
   partnerName,
   partnerAvatarUrl,
+  initialAnniversaries,
 }: {
   coupleId: string;
   startDate: string | null;
@@ -46,6 +47,7 @@ export function CalendarClient({
   partnerColor: string;
   partnerName: string;
   partnerAvatarUrl?: string | null;
+  initialAnniversaries: AnniversaryRow[];
 }) {
   const today = useMemo(() => new Date(), []);
   const router = useRouter();
@@ -73,25 +75,26 @@ export function CalendarClient({
 
   const [status, setStatus] = useState<"loading" | "error" | "success">("loading");
   const [events, setEvents] = useState<EventRow[]>([]);
-  const [anniversaries, setAnniversaries] = useState<AnniversaryRow[]>([]);
+  // 서버에서 이미 받아온 값으로 시작 — 기념일은 이 화면에 실시간 구독이 없고 자주
+  // 바뀌는 데이터도 아니라, 매번 다시 조회하지 않고 최초 진입 시 값만 유지한다.
+  const [anniversaries] = useState<AnniversaryRow[]>(initialAnniversaries);
   const [flashDate, setFlashDate] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setStatus("loading");
     const supabase = createClient();
 
-    const [eventsRes, annRes] = await Promise.all([
-      supabase.from("events").select("*").eq("couple_id", coupleId),
-      supabase.from("anniversaries").select("*").eq("couple_id", coupleId),
-    ]);
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .eq("couple_id", coupleId);
 
-    if (eventsRes.error || annRes.error) {
+    if (error) {
       setStatus("error");
       return;
     }
 
-    setEvents(eventsRes.data);
-    setAnniversaries(annRes.data);
+    setEvents(data);
     setStatus("success");
   }, [coupleId, year, month]);
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionInfo } from "@/lib/supabase/session";
+import { getCoupleAnniversaries } from "@/lib/supabase/anniversaries";
 import {
   ddayLabel,
   expandAnniversariesForMonth,
@@ -30,7 +31,7 @@ export default async function DayDetailPage({
   const supabase = await createClient();
   const d = parseDateKey(date);
 
-  const [eventsRes, notesRes, photosRes, annRes] = await Promise.all([
+  const [eventsRes, notesRes, photosRes, anniversariesData] = await Promise.all([
     supabase.from("events").select("*").eq("couple_id", couple.id),
     supabase
       .from("notes")
@@ -44,17 +45,18 @@ export default async function DayDetailPage({
       .eq("couple_id", couple.id)
       .eq("photo_date", date)
       .order("created_at"),
-    supabase.from("anniversaries").select("*").eq("couple_id", couple.id),
+    getCoupleAnniversaries(couple.id),
   ]);
 
-  if (eventsRes.error || notesRes.error || photosRes.error || annRes.error) {
+  if (eventsRes.error || notesRes.error || photosRes.error) {
     throw new Error("day-detail-load-failed");
   }
 
   const dayEvents =
     expandEventsForMonth(eventsRes.data, d.getFullYear(), d.getMonth() + 1).get(date) ?? [];
   const dayAnniversaries =
-    expandAnniversariesForMonth(annRes.data, d.getFullYear(), d.getMonth() + 1).get(date) ?? [];
+    expandAnniversariesForMonth(anniversariesData, d.getFullYear(), d.getMonth() + 1).get(date) ??
+    [];
   const dayHolidays =
     getKoreanHolidaysForMonth(d.getFullYear(), d.getMonth() + 1).get(date) ?? [];
   const notes = notesRes.data;

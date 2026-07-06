@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSessionInfo } from "@/lib/supabase/session";
-import { createClient } from "@/lib/supabase/server";
+import { getCoupleAnniversaries } from "@/lib/supabase/anniversaries";
 import { nextOccurrence, ddayLabel } from "@/lib/date-utils";
 import { AddAnniversaryForm } from "./add-form";
 import { AnniversaryItem } from "./anniversary-item";
@@ -9,13 +9,7 @@ export default async function AnniversariesPage() {
   const session = await getSessionInfo();
   if (session.status !== "connected") redirect("/login");
 
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("anniversaries")
-    .select("*")
-    .eq("couple_id", session.couple.id);
-
-  if (error) throw new Error("anniversaries-load-failed");
+  const data = await getCoupleAnniversaries(session.couple.id);
 
   const items = data
     .map((a) => ({ a, next: nextOccurrence(a) }))
